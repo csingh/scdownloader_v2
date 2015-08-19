@@ -12,6 +12,18 @@ import os
 import mutagen
 from mutagen.id3 import ID3, APIC, USLT
 
+def print_and_log_info(message):
+    print(message)
+    logging.info(message)
+
+def print_and_log_debug(message):
+    print(message)
+    logging.debug(message)
+
+def print_and_log_error(message):
+    print(message)
+    logging.error(message)
+
 def get_playlist_tracks(playlist_url, num_tracks=50, offset=0):
     logging.debug("Processing playlist at %s." % playlist_url)
     
