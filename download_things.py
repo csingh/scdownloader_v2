@@ -157,4 +157,4 @@ if __name__ == '__main__':
         print(traceback.format_exc())
         logging.critical(traceback.format_exc())
     finally:
-        print("\nDone.")
+        print_and_log_info("Done.")
