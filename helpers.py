@@ -1,6 +1,25 @@
 import traceback
 import requests
 import logging
+import unicodedata
+
+def convert_to_ascii(value):
+    if value is None: return None
+    return unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+
+# from the Django lib
+# https://github.com/django/django/blob/master/django/utils/text.py
+def slugify(value):
+    """
+    Converts to ASCII. Converts spaces to hyphens. Removes characters that
+    aren't alphanumerics, underscores, or hyphens. Converts to lowercase.
+    Also strips leading and trailing whitespace.
+    """
+    if value is None: return None
+    value = convert_to_ascii(value)
+    value = re.sub('[^\w\s-]', '', value).strip().lower()
+    value = (re.sub('[-\s]+', '-', value))
+    return value
 
 def download_file(url, file_path):
     try:
