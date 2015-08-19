@@ -56,7 +56,6 @@ class Track:
         self.title = dict_obj["title"]
         self.permalink = dict_obj["permalink_url"]
         self.description = dict_obj["description"]
-        self.stream_url = dict_obj["stream_url"]
 
         # set stream_url if it exists
         if "stream_url" in dict_obj:
