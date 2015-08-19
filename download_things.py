@@ -156,10 +156,11 @@ if __name__ == '__main__':
         logging.debug("dl_data: %s" % dl_data_filename)
 
         # create download and images directory
-        if not os.path.exists(mp3s_dir):
-            os.makedirs(mp3s_dir)
-        if not os.path.exists(images_dir):
-            os.makedirs(images_dir)
+        if not dry_run:
+            if not os.path.exists(mp3s_dir):
+                os.makedirs(mp3s_dir)
+            if not os.path.exists(images_dir):
+                os.makedirs(images_dir)
 
         # open previous download data json
         saved_data = load_json_data(dl_data_filename)
@@ -195,7 +196,7 @@ if __name__ == '__main__':
                 }
                 print_and_log_info("Processing %(count)s of %(total)s: %(username)s - %(title)s" % info)
 
-                logging.debug(t)
+                logging.debug(str(t))
 
                 # get file paths
                 mp3_path = os.path.join(mp3s_dir, t.filename + ".mp3")
