@@ -50,7 +50,7 @@ def get_tracks(username_or_url, get_tracks_method, num_tracks):
     num_tracks_retrieved = 0
     num_tracks_left = num_tracks
     offset = 0
-    max_limit = 5
+    max_limit = 100
 
     while (num_tracks_retrieved < num_tracks):
         # calculate how many tracks to retreive
@@ -66,6 +66,9 @@ def get_tracks(username_or_url, get_tracks_method, num_tracks):
 
         # get the tracks
         tracks = get_tracks_method(username_or_url, limit, offset)
+
+        if len(tracks) == 0:
+            break
 
         # update vars
         offset += len(tracks)
