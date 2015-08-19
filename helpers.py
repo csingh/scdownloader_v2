@@ -4,6 +4,18 @@ import logging
 import unicodedata
 import re
 
+def print_and_log_info(message):
+    print(message)
+    logging.info(message)
+
+def print_and_log_debug(message):
+    print(message)
+    logging.debug(message)
+
+def print_and_log_error(message):
+    print(message)
+    logging.error(message)
+
 def convert_to_ascii(value):
     if value is None: return None
     return unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')

@@ -9,9 +9,8 @@ import traceback
 import argparse
 import os
 
-def print_and_log_info(message):
-    print(message)
-    logging.info(message)
+import mutagen
+from mutagen.id3 import ID3, APIC, USLT
 
 def get_playlist_tracks(playlist_url, num_tracks=50, offset=0):
     logging.debug("Processing playlist at %s." % playlist_url)
@@ -45,7 +44,7 @@ def edit_id3_tags(track, mp3_path, img_path):
     logging.debug("Adding artist/title ID3 tags...")
     meta = mutagen.File(mp3_path, easy=True)
     meta["title"] = track.title
-    meta["artist"] = track.artist
+    meta["artist"] = track.username
     meta.save()
 
     # Embed description into lyrics field
@@ -196,7 +195,7 @@ if __name__ == '__main__':
                 # TODO: skip track if already downloaded
 
                 if not dry_run:
-                    dl_link = t.get_dl_link()
+                    dl_link = t.get_download_link(config.client_id)
 
                     if dl_link is None:
                         print_and_log_info("Download link not available, skipping track.")
@@ -222,8 +221,8 @@ if __name__ == '__main__':
                     # TODO: save to var for JSON
 
             except Exception as ex:
-                logging.error("Skipped track %s due to error:" % t.permalink)
-                logging.error(ex)
+                print_and_log_error("Skipped track %s due to error:" % t.permalink)
+                print_and_log_error(ex)
 
     except Exception as ex:
         print(ex)
