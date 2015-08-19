@@ -2,6 +2,7 @@ import traceback
 import requests
 import logging
 import unicodedata
+import re
 
 def convert_to_ascii(value):
     if value is None: return None

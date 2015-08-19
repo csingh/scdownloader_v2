@@ -92,13 +92,13 @@ class Track:
         pass
 
     def __str__(self):
-        s  = "username: " + self.username + "\n"
-        s += "title: " + self.title + "\n"
-        s += "filename: " + self.filename + "\n"
-        s += "permalink: " + self.permalink + "\n"
-        s += "stream_url: " + self.stream_url + "\n"
-        s += "download_url: " + self.download_url + "\n"
-        s += "artwork_url: " + self.artwork_url + "\n"
-        s += "description: " + self.description
+        s  = "username: " + str(self.username )+ "\n"
+        s += "title: " + str(self.title )+ "\n"
+        s += "filename: " + str(self.filename )+ "\n"
+        s += "permalink: " + str(self.permalink )+ "\n"
+        s += "stream_url: " + str(self.stream_url )+ "\n"
+        s += "download_url: " + str(self.download_url )+ "\n"
+        s += "artwork_url: " + str(self.artwork_url )+ "\n"
+        s += "description: " + str(self.description)
 
         return s
