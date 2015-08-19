@@ -235,6 +235,7 @@ if __name__ == '__main__':
             except Exception as ex:
                 print_and_log_error("Skipped track %s due to error:" % t.permalink)
                 print_and_log_error(ex)
+                logging.error(traceback.format_exc())
 
     except Exception as ex:
         print(ex)
