@@ -238,6 +238,9 @@ if __name__ == '__main__':
                 print_and_log_error(ex)
                 logging.error(traceback.format_exc())
 
+    except requests.exceptions.HTTPError as ex:
+        print_and_log_error("Error with SoundCloud client: double check username or favorites URL.")
+        logging.critical(traceback.format_exc())
     except Exception as ex:
         print(ex)
         print("\n\nERROR:\n\n");
