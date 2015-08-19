@@ -55,37 +55,6 @@ def get_favorite_tracks(username, num_tracks=50, offset=0):
 
     return tracks
 
-def edit_id3_tags(track, mp3_path, img_path):
-    # Edit Artist/Title ID3 tags
-    # http://stackoverflow.com/questions/18369188/python-add-id3-tags-to-mp3-file-that-has-no-tags
-    logging.debug("Adding artist/title ID3 tags...")
-    meta = mutagen.File(mp3_path, easy=True)
-    meta["title"] = track.title
-    meta["artist"] = track.username
-    meta.save()
-
-    # Embed description into lyrics field
-    if track.description is not None:
-        logging.debug("Writing description to lyrics field...")
-        audio = ID3(mp3_path)
-        audio.add(USLT(encoding=3, lang=u'eng', desc=u'desc', text=track.description))
-        audio.save()
-
-    # Embed album art
-    if track.artwork_url is not None:
-        logging.debug("Adding album art...")
-        audio = ID3(mp3_path)
-        audio.add(
-            APIC(
-                encoding=3, # 3 is for utf-8
-                mime='image/jpeg', # image/jpeg or image/png
-                type=3, # 3 is for the cover image
-                desc='Cover',
-                data=open(img_path, "rb").read()
-            )
-        )
-        audio.save()
-
 # this method is used to make repeated calls to soundcloud api
 # in order to retrieve the number of tracks specified
 # since the soundcloud api doesn't always use the 'limit' argument
@@ -125,6 +94,37 @@ def get_tracks(username_or_url, get_tracks_method, num_tracks):
         all_tracks = all_tracks + tracks
 
     return all_tracks
+
+def edit_id3_tags(track, mp3_path, img_path):
+    # Edit Artist/Title ID3 tags
+    # http://stackoverflow.com/questions/18369188/python-add-id3-tags-to-mp3-file-that-has-no-tags
+    logging.debug("Adding artist/title ID3 tags...")
+    meta = mutagen.File(mp3_path, easy=True)
+    meta["title"] = track.title
+    meta["artist"] = track.username
+    meta.save()
+
+    # Embed description into lyrics field
+    if track.description is not None:
+        logging.debug("Writing description to lyrics field...")
+        audio = ID3(mp3_path)
+        audio.add(USLT(encoding=3, lang=u'eng', desc=u'desc', text=track.description))
+        audio.save()
+
+    # Embed album art
+    if track.artwork_url is not None:
+        logging.debug("Adding album art...")
+        audio = ID3(mp3_path)
+        audio.add(
+            APIC(
+                encoding=3, # 3 is for utf-8
+                mime='image/jpeg', # image/jpeg or image/png
+                type=3, # 3 is for the cover image
+                desc='Cover',
+                data=open(img_path, "rb").read()
+            )
+        )
+        audio.save()
 
 if __name__ == '__main__':
     try:
