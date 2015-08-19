@@ -28,6 +28,15 @@ class Track:
 
         self.filename = helpers.slugify(self.username) + "-" + helpers.slugify(self.title)
 
+        # just to be safe... shouldn't hurt.
+        self.username = helpers.convert_to_ascii(self.username);
+        self.title = helpers.convert_to_ascii(self.title);
+        self.permalink = helpers.convert_to_ascii(self.permalink);
+        self.description = helpers.convert_to_ascii(self.description);
+        self.stream_url = helpers.convert_to_ascii(self.stream_url);
+        self.download_url = helpers.convert_to_ascii(self.download_url);
+        self.artwork_url = helpers.convert_to_ascii(self.artwork_url);
+
     def init_from_sc_resource(self, sc_resource):
         self.username = sc_resource.user["username"]
         self.title = sc_resource.title
