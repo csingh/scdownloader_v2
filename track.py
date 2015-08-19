@@ -71,18 +71,18 @@ class Track:
         # get 500x500 link instead of thumbnail
         self.artwork_url = self.artwork_url.replace("-large", "-t500x500")
 
-    def get_dl_link(self, client_id):
+    def get_download_link(self, client_id):
         if self.stream_url is None and self.download_url is None:
             return None
 
-        dl_link = self.stream_url
+        download_link = self.stream_url
 
         if self.download_url is not None:
-            dl_link = self.download_url
+            download_link = self.download_url
 
-        dl_link = dl_link + "?client_id=" + client_id
+        download_link = download_link + "?client_id=" + client_id
 
-        return dl_link
+        return download_link
 
     def to_dict(self):
         pass
