@@ -39,6 +39,37 @@ def get_favorite_tracks(username, num_tracks=50, offset=0):
 
     return tracks
 
+def edit_id3_tags(track, mp3_path, img_path):
+    # Edit Artist/Title ID3 tags
+    # http://stackoverflow.com/questions/18369188/python-add-id3-tags-to-mp3-file-that-has-no-tags
+    logging.debug("Adding artist/title ID3 tags...")
+    meta = mutagen.File(mp3_path, easy=True)
+    meta["title"] = track.title
+    meta["artist"] = track.artist
+    meta.save()
+
+    # Embed description into lyrics field
+    if track.description is not None:
+        logging.debug("Writing description to lyrics field...")
+        audio = ID3(mp3_path)
+        audio.add(USLT(encoding=3, lang=u'eng', desc=u'desc', text=track.description))
+        audio.save()
+
+    # Embed album art
+    if track.artwork_url is not None:
+        logging.debug("Adding album art...")
+        audio = ID3(mp3_path)
+        audio.add(
+            APIC(
+                encoding=3, # 3 is for utf-8
+                mime='image/jpeg', # image/jpeg or image/png
+                type=3, # 3 is for the cover image
+                desc='Cover',
+                data=open(img_path, "rb").read()
+            )
+        )
+        audio.save()
+
 # this method is used to make repeated calls to soundcloud api
 # in order to retrieve the number of tracks specified
 # since the soundcloud api doesn't always use the 'limit' argument
@@ -140,16 +171,59 @@ if __name__ == '__main__':
             # process user favs
             tracks = get_tracks(username_or_url, get_favorite_tracks, num_tracks)
 
+        # iterate through and download tracks
         count = 0
-        for track in tracks:
-            count += 1
-            info = {
-                "count" : count,
-                "total" : len(tracks),
-                "username" : track.username,
-                "title" : track.title
-            }
-            print_and_log_info("%(count)s of %(total)s: %(username)s - %(title)s" % info)
+        for t in tracks:
+            try:
+                count += 1
+                info = {
+                    "count" : count,
+                    "total" : len(tracks),
+                    "username" : t.username,
+                    "title" : t.title
+                }
+                print_and_log_info("Processing %(count)s of %(total)s: %(username)s - %(title)s" % info)
+
+                logging.debug(t)
+
+                # get file paths
+                mp3_path = os.path.join(downloads_dir, t.filename + ".mp3")
+                mp3_path = os.path.join(downloads_dir, t.filename + ".jpg")
+
+                logging.debug("mp3_path: %s" % mp3_path)
+                logging.debug("img_path: %s" % img_path)
+
+                # TODO: skip track if already downloaded
+
+                if not dry_run:
+                    dl_link = t.get_dl_link()
+
+                    if dl_link is None:
+                        print_and_log_info("Download link not available, skipping track.")
+                        continue
+
+                    logging.debug("dl_link: %s" % dl_link)
+
+                    # download mp3 from link
+                    download_file(dl_link, mp3_path)
+
+                    # download album art
+                    if t.artwork_url is not None:
+                        download_file(t.artwork_url, img_path)
+
+                    # only edit id3 tags if low quality (untagged) mp3 downloaded
+                    # basically only if stream_url was provided and
+                    # download_url was not
+                    if t.download_url is None:
+                        edit_id3_tags(t, mp3_path, img_path)
+                    else:
+                        logging.debug("HQ MP3 downloaded, skipping id3 editing")
+
+                    # TODO: save to var for JSON
+
+            except Exception as ex:
+                logging.error("Skipped track %s due to error:" % t.permalink)
+                logging.error(ex)
 
     except Exception as ex:
         print(ex)
@@ -157,4 +231,5 @@ if __name__ == '__main__':
         print(traceback.format_exc())
         logging.critical(traceback.format_exc())
     finally:
+        # TODO: save JSON
         print_and_log_info("Done.")
