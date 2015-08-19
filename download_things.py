@@ -11,11 +11,11 @@ import os
 import mutagen
 from mutagen.id3 import ID3, APIC, USLT
 
-client_id = "9f37d30eaf2f7205b29d1e7409f8e4a7"
-num_tracks = 50
-mp3s_dir = "downloads"
-images_dir = "downloads/images"
-dl_data_filename = "dl_data.json"
+default_client_id = "9f37d30eaf2f7205b29d1e7409f8e4a7"
+default_num_tracks = 50
+default_mp3s_dir = "downloads"
+default_images_dir = "downloads/images"
+default_dl_data_filename = "dl_data.json"
 
 def print_and_log_info(message):
     print(message)
@@ -139,19 +139,19 @@ if __name__ == '__main__':
         # parse command line args
         parser = argparse.ArgumentParser()
         parser.add_argument("username_or_url", help="SoundCloud username, or URL to a SoundCloud playlist")
-        parser.add_argument("--num_tracks", help="Number of tracks to process (default %s)" % config.num_tracks, type=int)
+        parser.add_argument("--num_tracks", help="Number of tracks to process (default %s)" % default_num_tracks, type=int)
         parser.add_argument("--dry_run", help="Display tracks but don't download", action="store_true")
-        parser.add_argument("--mp3s_dir", help="Path for image downloads (default: %s)" % config.mp3s_dir)
-        parser.add_argument("--images_dir", help="Path for image downloads (default: %s)" % config.images_dir)
-        parser.add_argument("--dl_data", help="Path for download data JSON file (default: %s)" % config.dl_data_filename)
+        parser.add_argument("--mp3s_dir", help="Path for image downloads (default: %s)" % default_mp3s_dir)
+        parser.add_argument("--images_dir", help="Path for image downloads (default: %s)" % default_images_dir)
+        parser.add_argument("--dl_data", help="Path for download data JSON file (default: %s)" % default_dl_data_filename)
         args = parser.parse_args()
 
         username_or_url = args.username_or_url
-        num_tracks = args.num_tracks or config.num_tracks
+        num_tracks = args.num_tracks or default_num_tracks
         dry_run = args.dry_run
-        images_dir = args.images_dir or config.images_dir
-        mp3s_dir = args.mp3s_dir or config.mp3s_dir
-        dl_data_filename = args.dl_data or config.dl_data_filename
+        images_dir = args.images_dir or default_images_dir
+        mp3s_dir = args.mp3s_dir or default_mp3s_dir
+        dl_data_filename = args.dl_data or default_dl_data_filename
 
         logging.debug("username/url: %s" % username_or_url)
         logging.debug("num_tracks: %s" % num_tracks)
@@ -174,8 +174,8 @@ if __name__ == '__main__':
             saved_data = []
 
         # create SoundCloud client
-        logging.debug("client_id: %s", config.client_id)
-        client = soundcloud.Client(client_id=config.client_id)
+        logging.debug("client_id: %s", default_client_id)
+        client = soundcloud.Client(client_id=default_client_id)
 
         tracks = []
 
@@ -213,7 +213,7 @@ if __name__ == '__main__':
                 # TODO: skip track if already downloaded
 
                 if not dry_run:
-                    dl_link = t.get_download_link(config.client_id)
+                    dl_link = t.get_download_link(default_client_id)
 
                     if dl_link is None:
                         print_and_log_info("Download link not available, skipping track.")
