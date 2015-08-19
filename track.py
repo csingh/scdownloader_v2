@@ -97,7 +97,17 @@ class Track:
         return download_link
 
     def to_dict(self):
-        pass
+        d = {}
+        d["username"] = self.username;
+        d["title"] = self.title;
+        d["permalink"] = self.permalink;
+        d["description"] = self.description;
+        d["stream_url"] = self.stream_url;
+        d["download_url"] = self.download_url;
+        d["artwork_url"] = self.artwork_url;
+        d["filename"] = self.filename;
+
+        return d
 
     def __str__(self):
         s  = "username: " + str(self.username )+ "\n"

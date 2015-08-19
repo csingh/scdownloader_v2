@@ -29,6 +29,9 @@ def print_and_log_error(message):
     print(message)
     logging.error(message)
 
+def print_and_log_critical(message):
+    logging.critical(message)
+
 def get_playlist_tracks(playlist_url, num_tracks=50, offset=0):
     logging.debug("Processing playlist at %s." % playlist_url)
     
@@ -61,12 +64,17 @@ def get_favorite_tracks(username, num_tracks=50, offset=0):
 # properly (ie. give it 50, and it sometimes returns 49 tracks), we
 # have to manualyl keep track of how many items were returned, in
 # order to know the next call's offset value
-def get_tracks(username_or_url, get_tracks_method, num_tracks):
+def get_tracks(username_or_url, method, num_tracks):
     all_tracks = []
     num_tracks_retrieved = 0
     num_tracks_left = num_tracks
     offset = 0
     max_limit = 100
+
+    if method == 'favs':
+        get_tracks_method = get_favorite_tracks
+    elif method == 'playlist':
+        get_tracks_method = get_playlist_tracks
 
     while (num_tracks_retrieved < num_tracks):
         # calculate how many tracks to retreive
@@ -92,6 +100,12 @@ def get_tracks(username_or_url, get_tracks_method, num_tracks):
 
         # append to all_tracks
         all_tracks = all_tracks + tracks
+
+    # if retrieving favs, then reverse the tracks order so we process from
+    # oldest to newest don't need to do this for playlists since the newest
+    # additions are at the bottom by default
+    if method == 'favs':
+        all_tracks.reverse()
 
     return all_tracks
 
@@ -168,10 +182,16 @@ if __name__ == '__main__':
                 os.makedirs(images_dir)
 
         # open previous download data json
+        # use a list (saved_data) to save to json because its more
+        # human readable/editable, but use a dict (save_data_dict) for # checking if a track already downloaded, since its quicker
+        print_and_log_info("Loading previously downloaded tracks from database...")
         saved_data = load_json_data(dl_data_filename)
+        saved_data_dict = {}
         if saved_data is None:
             logging.debug("Could not load %s, continuing..." % dl_data_filename)
             saved_data = []
+        else:
+            saved_data_dict = {t["permalink"]:None for t in saved_data}
 
         # create SoundCloud client
         logging.debug("client_id: %s", default_client_id)
@@ -183,10 +203,12 @@ if __name__ == '__main__':
         # pick appropriate function to use later
         if username_or_url.find("/sets/") != -1:
             # process playlist/set
-            tracks = get_tracks(username_or_url, get_playlist_tracks, num_tracks)
+            print_and_log_info("Retreiving tracks from %s." % username_or_url)
+            tracks = get_tracks(username_or_url, 'playlist', num_tracks)
         else:
             # process user favs
-            tracks = get_tracks(username_or_url, get_favorite_tracks, num_tracks)
+            print_and_log_info("Retrieving %s's favorite tracks." % username_or_url)
+            tracks = get_tracks(username_or_url, 'favs', num_tracks)
 
         # iterate through and download tracks
         count = 0
@@ -210,7 +232,10 @@ if __name__ == '__main__':
                 logging.debug("mp3_path: %s" % mp3_path)
                 logging.debug("img_path: %s" % img_path)
 
-                # TODO: skip track if already downloaded
+                # skip track if already downloaded
+                if t.permalink in saved_data_dict:
+                    print_and_log_info("Track already downloaded, skipping...")
+                    continue
 
                 if not dry_run:
                     dl_link = t.get_download_link(default_client_id)
@@ -236,7 +261,9 @@ if __name__ == '__main__':
                     else:
                         logging.debug("HQ MP3 downloaded, skipping id3 editing")
 
-                    # TODO: save to var for JSON
+                    # add to saved_data so we can later write to JSON file
+                    saved_data.append(t.to_dict())
+                    saved_data_dict[t.permalink] = None
 
             except Exception as ex:
                 print_and_log_error("Skipped track %s due to error:" % t.permalink)
@@ -247,10 +274,10 @@ if __name__ == '__main__':
         print_and_log_error("Error with SoundCloud client: double check username or favorites URL.")
         logging.critical(traceback.format_exc())
     except Exception as ex:
-        print(ex)
-        print("\n\nERROR:\n\n");
-        print(traceback.format_exc())
-        logging.critical(traceback.format_exc())
+        print_and_log_critical("\n\nERROR:\n\n");
+        print_and_log_critical(traceback.format_exc())
     finally:
-        # TODO: save JSON
+        # save JSON
+        if not dry_run: save_json_data(saved_data, dl_data_filename)
+        # done!
         print_and_log_info("Done.")

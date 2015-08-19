@@ -3,6 +3,7 @@ import requests
 import logging
 import unicodedata
 import re
+import json
 
 def convert_to_ascii(value):
     if value is None: return None
@@ -51,6 +52,7 @@ def load_json_data(json_path):
             return d
     except Exception as ex:
         logging.error("Failed to load JSON data from %s" % json_path)
+        logging.error(traceback.format_exc())
         return None
 
 def save_json_data(data, json_path):
@@ -60,4 +62,5 @@ def save_json_data(data, json_path):
             json.dump( data, f, sort_keys=True, indent=4, separators=(',', ':') )
             logging.debug("Saved JSON data");
     except:
-            logging.error("Failed to save JSON data to %s" % json_path)
+            logging.critical("Failed to save JSON data to %s" % json_path)
+            logging.critical(traceback.format_exc())
