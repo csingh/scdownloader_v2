@@ -29,7 +29,10 @@ class Track:
         self.title = sc_resource.title
         self.permalink = sc_resource.permalink_url
         self.description = sc_resource.description
-        self.stream_url = sc_resource.stream_url
+
+        # set stream_url if it exists
+        if "stream_url" in sc_resource.keys():
+            self.stream_url = sc_resource.stream_url
 
         # set download_url if it exists
         if "download_url" in sc_resource.keys():
@@ -51,6 +54,10 @@ class Track:
         self.description = dict_obj["description"]
         self.stream_url = dict_obj["stream_url"]
 
+        # set stream_url if it exists
+        if "stream_url" in dict_obj:
+            self.stream_url = dict_obj["stream_url"]
+
         # set download_url if it exists
         if "download_url" in dict_obj:
             self.download_url = dict_obj["download_url"]
@@ -65,6 +72,9 @@ class Track:
         self.artwork_url = self.artwork_url.replace("-large", "-t500x500")
 
     def get_dl_link(self, client_id):
+        if self.stream_url is None and self.download_url is None:
+            return None
+
         dl_link = self.stream_url
 
         if self.download_url is not None:
@@ -73,3 +83,6 @@ class Track:
         dl_link = dl_link + "?client_id=" + client_id
 
         return dl_link
+
+    def to_dict(self):
+        pass
