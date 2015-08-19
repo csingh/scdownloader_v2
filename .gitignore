@@ -1,0 +1,8 @@
+*.json
+*.png
+*.mp3
+downloads/*
+*.pickle
+*.bak
+*.pyc
+*.log
