@@ -1,5 +1,19 @@
 import soundcloud
 
+# from the Django lib
+# https://github.com/django/django/blob/master/django/utils/text.py
+def slugify(value):
+    """
+    Converts to ASCII. Converts spaces to hyphens. Removes characters that
+    aren't alphanumerics, underscores, or hyphens. Converts to lowercase.
+    Also strips leading and trailing whitespace.
+    """
+    if value is None: return None
+    value = convert_to_ascii(value)
+    value = re.sub('[^\w\s-]', '', value).strip().lower()
+    value = (re.sub('[-\s]+', '-', value))
+    return value
+
 class Track:
     def __init__(self, object):
         # Note to self:
@@ -16,6 +30,7 @@ class Track:
         self.stream_url = None;
         self.download_url = None;
         self.artwork_url = None;
+        self.filename = None;
 
         if type(object) is soundcloud.resource.Resource:
             self.init_from_sc_resource(object)
@@ -23,6 +38,8 @@ class Track:
             self.init_from_dict(object)
         else:
             raise TypeError("Unsupported type: %s." % str(type(object)))
+
+        self.filename = slugify(self.username) + "-" + slugify(self.title)
 
     def init_from_sc_resource(self, sc_resource):
         self.username = sc_resource.user["username"]
