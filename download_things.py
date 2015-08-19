@@ -125,28 +125,28 @@ if __name__ == '__main__':
         parser.add_argument("username_or_url", help="SoundCloud username, or URL to a SoundCloud playlist")
         parser.add_argument("--num_tracks", help="Number of tracks to process (default %s)" % config.num_tracks, type=int)
         parser.add_argument("--dry_run", help="Display tracks but don't download", action="store_true")
-        parser.add_argument("--mp3_path", help="Path for image downloads (default: %s)" % config.downloads_dir)
-        parser.add_argument("--img_path", help="Path for image downloads (default: %s)" % config.images_dir)
+        parser.add_argument("--mp3s_dir", help="Path for image downloads (default: %s)" % config.mp3s_dir)
+        parser.add_argument("--images_dir", help="Path for image downloads (default: %s)" % config.images_dir)
         parser.add_argument("--dl_data", help="Path for download data JSON file (default: %s)" % config.dl_data_filename)
         args = parser.parse_args()
 
         username_or_url = args.username_or_url
         num_tracks = args.num_tracks or config.num_tracks
         dry_run = args.dry_run
-        images_dir = args.img_path or config.images_dir
-        downloads_dir = args.mp3_path or config.downloads_dir
+        images_dir = args.images_dir or config.images_dir
+        mp3s_dir = args.mp3s_dir or config.mp3s_dir
         dl_data_filename = args.dl_data or config.dl_data_filename
 
         logging.debug("username/url: %s" % username_or_url)
         logging.debug("num_tracks: %s" % num_tracks)
         logging.debug("dry_run: %s" % dry_run)
-        logging.debug("mp3_path: %s" % downloads_dir)
-        logging.debug("img_path: %s" % images_dir)
+        logging.debug("mp3s_dir: %s" % mp3s_dir)
+        logging.debug("images_dir: %s" % images_dir)
         logging.debug("dl_data: %s" % dl_data_filename)
 
         # create download and images directory
-        if not os.path.exists(downloads_dir):
-            os.makedirs(downloads_dir)
+        if not os.path.exists(mp3s_dir):
+            os.makedirs(mp3s_dir)
         if not os.path.exists(images_dir):
             os.makedirs(images_dir)
 
@@ -187,8 +187,8 @@ if __name__ == '__main__':
                 logging.debug(t)
 
                 # get file paths
-                mp3_path = os.path.join(downloads_dir, t.filename + ".mp3")
-                mp3_path = os.path.join(downloads_dir, t.filename + ".jpg")
+                mp3_path = os.path.join(mp3s_dir, t.filename + ".mp3")
+                img_path = os.path.join(images_dir, t.filename + ".jpg")
 
                 logging.debug("mp3_path: %s" % mp3_path)
                 logging.debug("img_path: %s" % img_path)
