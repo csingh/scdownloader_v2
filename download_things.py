@@ -182,16 +182,11 @@ if __name__ == '__main__':
                 os.makedirs(images_dir)
 
         # open previous download data json
-        # use a list (saved_data) to save to json because its more
-        # human readable/editable, but use a dict (save_data_dict) for # checking if a track already downloaded, since its quicker
         print_and_log_info("Loading previously downloaded tracks from database...")
         saved_data = load_json_data(dl_data_filename)
-        saved_data_dict = {}
         if saved_data is None:
             logging.debug("Could not load %s, continuing..." % dl_data_filename)
-            saved_data = []
-        else:
-            saved_data_dict = {t["permalink"]:None for t in saved_data}
+            saved_data = {}
 
         # create SoundCloud client
         logging.debug("client_id: %s", default_client_id)
@@ -233,7 +228,7 @@ if __name__ == '__main__':
                 logging.debug("img_path: %s" % img_path)
 
                 # skip track if already downloaded
-                if t.permalink in saved_data_dict:
+                if t.permalink in saved_data:
                     print_and_log_info("Track already downloaded, skipping...")
                     continue
 
@@ -262,8 +257,7 @@ if __name__ == '__main__':
                         logging.debug("HQ MP3 downloaded, skipping id3 editing")
 
                     # add to saved_data so we can later write to JSON file
-                    saved_data.append(t.to_dict())
-                    saved_data_dict[t.permalink] = None
+                    saved_data[t.permalink] = t
 
             except Exception as ex:
                 print_and_log_error("Skipped track %s due to error:" % t.permalink)
