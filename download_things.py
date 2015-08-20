@@ -153,18 +153,18 @@ if __name__ == '__main__':
         # parse command line args
         parser = argparse.ArgumentParser()
         parser.add_argument("username_or_url", help="SoundCloud username, or URL to a SoundCloud playlist")
-        parser.add_argument("--num_tracks", help="Number of tracks to process (default %s)" % default_num_tracks, type=int)
+        parser.add_argument("--num_songs", help="Number of tracks to process (default %s)" % default_num_tracks, type=int)
         parser.add_argument("--dry_run", help="Display tracks but don't download", action="store_true")
-        parser.add_argument("--mp3s_dir", help="Path for image downloads (default: %s)" % default_mp3s_dir)
-        parser.add_argument("--images_dir", help="Path for image downloads (default: %s)" % default_images_dir)
+        parser.add_argument("--mp3_path", help="Path for mp3 downloads (default: %s)" % default_mp3s_dir)
+        parser.add_argument("--img_path", help="Path for image downloads (default: %s)" % default_images_dir)
         parser.add_argument("--dl_data", help="Path for download data JSON file (default: %s)" % default_dl_data_filename)
         args = parser.parse_args()
 
         username_or_url = args.username_or_url
-        num_tracks = args.num_tracks or default_num_tracks
+        num_tracks = args.num_songs or default_num_tracks
         dry_run = args.dry_run
-        images_dir = args.images_dir or default_images_dir
-        mp3s_dir = args.mp3s_dir or default_mp3s_dir
+        images_dir = args.img_path or default_images_dir
+        mp3s_dir = args.mp3_path or default_mp3s_dir
         dl_data_filename = args.dl_data or default_dl_data_filename
 
         logging.debug("username/url: %s" % username_or_url)
