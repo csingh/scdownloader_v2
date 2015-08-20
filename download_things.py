@@ -281,13 +281,8 @@ if __name__ == '__main__':
     logging.debug("dl_data: %s" % dl_data_filename)
 
     # create SoundCloud client
-    try:
-        logging.debug("client_id: %s", default_client_id)
-        client = soundcloud.Client(client_id=default_client_id)
-    except Exception as ex:
-        print_and_log_critical("Error while creating SoundCloud client, verify client ID.")
-        print_and_log_critical(traceback.format_exc())
-        sys.exit()
+    logging.debug("client_id: %s", default_client_id)
+    client = soundcloud.Client(client_id=default_client_id)
 
     # check URL to see if its for list of playlists. If it is, process each playlist. If not
     # pass URL through to download_the_things
@@ -296,7 +291,7 @@ if __name__ == '__main__':
         parse_url_and_get_tracks(parse_url, num_tracks)
     except:
         print_and_log_critical("Error while resolving SoundCloud URL, verify that it's valid.")
-        print_and_log_critical(traceback.format_exc())
+        logging.critical(traceback.format_exc())
         sys.exit()
 
     print_and_log_info("Done.")
