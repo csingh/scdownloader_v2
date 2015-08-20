@@ -30,6 +30,7 @@ def print_and_log_error(message):
     logging.error(message)
 
 def print_and_log_critical(message):
+    print(message)
     logging.critical(message)
 
 def get_playlist_tracks(playlist_url, num_tracks=50, offset=0):
