@@ -8,6 +8,7 @@ import traceback
 import argparse
 import os
 import sys
+from datetime import datetime
 
 import mutagen
 from mutagen.id3 import ID3, APIC, USLT
@@ -269,9 +270,14 @@ def parse_url_and_get_tracks(parse_url, num_tracks):
 #-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
+    # get date for log filename
+    date = datetime.today().strftime('%Y%m%d')
+    log_filename = "logs/scdownloader." + date + ".log"
+    create_dir_if_doesnt_exist('logs/')
+
     # logger config
     logging.basicConfig(
-        filename='scdownloader.log',
+        filename=log_filename,
         format='%(asctime)s | %(levelname)s | %(module)s | %(message)s',
         datefmt='%m/%d/%Y %I:%M:%S %p',
         level=logging.DEBUG
