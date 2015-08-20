@@ -7,6 +7,7 @@ import traceback
 
 import argparse
 import os
+import sys
 
 import mutagen
 from mutagen.id3 import ID3, APIC, USLT
@@ -109,6 +110,22 @@ def get_tracks(parse_url, method, num_tracks):
 
     return all_tracks
 
+def parse_url_and_get_tracks(parse_url):
+    # check if user likes or playlist url
+    # pick appropriate function to use later
+    if (parse_url.find("/playlists/") != -1) or (parse_url.find("/sets/") != -1):
+        # process playlist/set
+        print_and_log_info("Retreiving tracks from %s." % parse_url)
+        tracks = get_tracks(parse_url, 'playlist', num_tracks)
+    else:
+        # process user favs
+        print_and_log_info("Retrieving favorites from %s." % parse_url)
+        tracks = get_tracks(parse_url, 'favs', num_tracks)
+
+    return tracks
+
+# given an mp3 path, fill id3 tags using info from track, and album art
+# from img_path
 def edit_id3_tags(track, mp3_path, img_path):
     # Edit Artist/Title ID3 tags
     # http://stackoverflow.com/questions/18369188/python-add-id3-tags-to-mp3-file-that-has-no-tags
@@ -140,105 +157,90 @@ def edit_id3_tags(track, mp3_path, img_path):
         )
         audio.save()
 
-def download_the_things(parse_url, num_tracks, dry_run, mp3s_dir, images_dir, dl_data_filename):
+def download_track_and_edit_tags(dl_link, track, mp3_path, img_path):
     try:
-        # create download and images directory
-        if not dry_run:
-            if not os.path.exists(mp3s_dir):
-                os.makedirs(mp3s_dir)
-            if not os.path.exists(images_dir):
-                os.makedirs(images_dir)
+        # download mp3 from link
+        download_file(dl_link, mp3_path)
 
-        # open previous download data json
-        print_and_log_info("Loading previously downloaded tracks from database...")
-        saved_data = load_json_data(dl_data_filename)
-        if saved_data is None:
-            logging.debug("Could not load %s, continuing..." % dl_data_filename)
-            saved_data = {}
+        # download album art
+        if t.artwork_url is not None:
+            download_file(t.artwork_url, img_path)
 
-        tracks = []
-
-        # check if arg is username or playlist url
-        # pick appropriate function to use later
-        if parse_url.find("/sets/") != -1:
-            # process playlist/set
-            print_and_log_info("Retreiving tracks from %s." % parse_url)
-            tracks = get_tracks(parse_url, 'playlist', num_tracks)
+        # only edit id3 tags if low quality (untagged) mp3 downloaded
+        # basically only if stream_url was provided and
+        # download_url was not
+        if t.download_url is None:
+            edit_id3_tags(t, mp3_path, img_path)
         else:
-            # process user favs
-            print_and_log_info("Retrieving %s's favorite tracks." % parse_url)
-            tracks = get_tracks(parse_url, 'favs', num_tracks)
+            logging.debug("HQ MP3 downloaded, skipping id3 editing")
 
-        # iterate through and download tracks
-        count = 0
-        for t in tracks:
-            try:
-                count += 1
-                info = {
-                    "count" : count,
-                    "total" : len(tracks),
-                    "username" : t.username,
-                    "title" : t.title
-                }
-                print_and_log_info("Processing %(count)s of %(total)s: %(username)s - %(title)s" % info)
-
-                logging.debug(str(t))
-
-                # get file paths
-                mp3_path = os.path.join(mp3s_dir, t.filename + ".mp3")
-                img_path = os.path.join(images_dir, t.filename + ".jpg")
-
-                logging.debug("mp3_path: %s" % mp3_path)
-                logging.debug("img_path: %s" % img_path)
-
-                # skip track if already downloaded
-                if t.permalink in saved_data:
-                    print_and_log_info("Track already downloaded, skipping...")
-                    continue
-
-                if not dry_run:
-                    dl_link = t.get_download_link(default_client_id)
-
-                    if dl_link is None:
-                        print_and_log_info("Download link not available, skipping track.")
-                        continue
-
-                    logging.debug("dl_link: %s" % dl_link)
-
-                    # download mp3 from link
-                    download_file(dl_link, mp3_path)
-
-                    # download album art
-                    if t.artwork_url is not None:
-                        download_file(t.artwork_url, img_path)
-
-                    # only edit id3 tags if low quality (untagged) mp3 downloaded
-                    # basically only if stream_url was provided and
-                    # download_url was not
-                    if t.download_url is None:
-                        edit_id3_tags(t, mp3_path, img_path)
-                    else:
-                        logging.debug("HQ MP3 downloaded, skipping id3 editing")
-
-                    # add to saved_data so we can later write to JSON file
-                    saved_data[t.permalink] = t
-
-            except Exception as ex:
-                print_and_log_error("Skipped track %s due to error:" % t.permalink)
-                print_and_log_error(ex)
-                logging.error(traceback.format_exc())
-
-    except requests.exceptions.HTTPError as ex:
-        print_and_log_error("Error with SoundCloud client: double check username or favorites URL.")
-        logging.critical(traceback.format_exc())
+        # add to saved_data so we can later write to JSON file
+        saved_data[t.permalink] = t
     except Exception as ex:
-        print_and_log_critical("\n\nERROR:\n\n");
+        print_and_log_error("Skipped track %s due to error:" % t.permalink)
+        print_and_log_error(ex)
+        logging.error(traceback.format_exc())
+
+def download_the_things(parse_url, num_tracks, dry_run, mp3s_dir, images_dir, dl_data_filename):
+    # create download and images directory
+    create_dir_if_doesnt_exist(mp3s_dir)
+    create_dir_if_doesnt_exist(images_dir)
+
+    # open previous download data json
+    print_and_log_info("Loading previously downloaded tracks from database...")
+    saved_data = load_json_data(dl_data_filename)
+    if saved_data is None:
+        logging.debug("Could not load %s, continuing..." % dl_data_filename)
+        saved_data = {}
+
+    # parse url and get tracks
+    try:
+        tracks = parse_url_and_get_tracks(parse_url)
+    except:
+        print_and_log_critical("Error while getting tracks from %s. Verify that URL is correct.")
         print_and_log_critical(traceback.format_exc())
-    finally:
-        # save JSON
-        if not dry_run: save_json_data(saved_data, dl_data_filename)
-        # done!
-        print_and_log_info("Done.")
+        sys.exit()
+
+    # iterate through and download tracks
+    count = 0
+    for t in tracks:
+        count += 1
+        info = {
+            "count" : count,
+            "total" : len(tracks),
+            "username" : t.username,
+            "title" : t.title
+        }
+        print_and_log_info("Processing %(count)s of %(total)s: %(username)s - %(title)s" % info)
+
+        logging.debug(str(t))
+
+        # get file paths
+        mp3_path = os.path.join(mp3s_dir, t.filename + ".mp3")
+        img_path = os.path.join(images_dir, t.filename + ".jpg")
+
+        logging.debug("mp3_path: %s" % mp3_path)
+        logging.debug("img_path: %s" % img_path)
+
+        # skip track if already downloaded
+        if t.permalink in saved_data:
+            print_and_log_info("Track already downloaded, skipping...")
+            continue
+
+        # if not dry_run then download track
+        if not dry_run:
+            dl_link = t.get_download_link(default_client_id)
+            if dl_link is None:
+                print_and_log_info("Download link not available, skipping track.")
+                continue
+
+            logging.debug("dl_link: %s" % dl_link)
+
+            download_track_and_edit_tags(dl_link, t, mp3_path, img_path)
+
+    # save JSON
+    if not dry_run:
+        save_json_data(saved_data, dl_data_filename)
 
 if __name__ == '__main__':
     # logger config
@@ -274,7 +276,14 @@ if __name__ == '__main__':
     logging.debug("dl_data: %s" % dl_data_filename)
 
     # create SoundCloud client
-    logging.debug("client_id: %s", default_client_id)
-    client = soundcloud.Client(client_id=default_client_id)
+    try:
+        logging.debug("client_id: %s", default_client_id)
+        client = soundcloud.Client(client_id=default_client_id)
+    except Exception as ex:
+        print_and_log_critical("Error while creating SoundCloud client. Verify client ID")
+        print_and_log_critical(traceback.format_exc())
+        sys.exit()
 
     download_the_things(parse_url, num_tracks, dry_run, mp3s_dir, images_dir, dl_data_filename)
+
+    print_and_log_info("Done.")

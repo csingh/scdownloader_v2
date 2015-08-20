@@ -4,6 +4,11 @@ import logging
 import unicodedata
 import re
 import json
+import os
+
+def create_dir_if_doesnt_exist(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 def convert_to_ascii(value):
     if value is None: return None
