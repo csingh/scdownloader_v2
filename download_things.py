@@ -228,25 +228,43 @@ def parse_url_and_get_tracks(parse_url, num_tracks):
         playlists = client.get('/resolve', url=parse_url)
 
         for p in playlists:
-            print_and_log_info("Processing tracks from playlist %s" % p.title)
+            print_and_log_info("Processing tracks from playlist %s" % p.permalink)
             tracks = get_tracks(p.uri, 'playlist', num_tracks)
 
-            title_slug = slugify(p.title)
-            new_mp3s_dir = os.path.join(mp3s_dir, title_slug)
-            new_dl_data_filename = os.path.join(mp3s_dir, title_slug, dl_data_filename)
+            username = p.user["permalink"]
+            pl_name = p.permalink
+
+            new_mp3s_dir = os.path.join(mp3s_dir, username, pl_name)
+            new_dl_data_filename = os.path.join(mp3s_dir, username, pl_name, dl_data_filename)
 
             download_the_things(tracks, num_tracks, dry_run, new_mp3s_dir, new_dl_data_filename)
 
     # single playlist
     elif parse_url.find('/sets') != -1:
-        print_and_log_info("Processing tracks from playlist %s." % parse_url)
+        r = client.get('/resolve', url=parse_url)
+
+        username = r.user["permalink"]
+        pl_name = r.permalink
+
+        new_mp3s_dir = os.path.join(mp3s_dir, username, pl_name)
+        new_dl_data_filename = os.path.join(mp3s_dir, username, pl_name, dl_data_filename)
+
+        print_and_log_info("Processing tracks from playlist %s." % r.permalink)
         tracks = get_tracks(parse_url, 'playlist', num_tracks)
-        download_the_things(tracks, num_tracks, dry_run, mp3s_dir, dl_data_filename)
+        download_the_things(tracks, num_tracks, dry_run, new_mp3s_dir, new_dl_data_filename)
     # user likes
     else:
-        print_and_log_info("Processing likes from %s." % parse_url)
+        r = client.get('/resolve', url=parse_url)
+
+        username = r.permalink
+        likes_folder = '!_likes'
+
+        new_mp3s_dir = os.path.join(mp3s_dir, username, likes_folder)
+        new_dl_data_filename = os.path.join(mp3s_dir, username, likes_folder, dl_data_filename)
+
+        print_and_log_info("Processing likes from %s." % r.permalink)
         tracks = get_tracks(parse_url, 'favs', num_tracks)
-        download_the_things(tracks, num_tracks, dry_run, mp3s_dir, dl_data_filename)
+        download_the_things(tracks, num_tracks, dry_run, new_mp3s_dir, new_dl_data_filename)
 
 #-------------------------------------------------------------------------------
 
@@ -289,9 +307,11 @@ if __name__ == '__main__':
     try:
         # parse url and get tracks
         parse_url_and_get_tracks(parse_url, num_tracks)
-    except:
+    except requests.exceptions.HTTPError:
         print_and_log_critical("Error while resolving SoundCloud URL, verify that it's valid.")
         logging.critical(traceback.format_exc())
-        sys.exit()
+    except:
+        print_and_log_critical("ERROR:")
+        print_and_log_critical(traceback.format_exc())
 
     print_and_log_info("Done.")
