@@ -35,7 +35,7 @@ def print_and_log_critical(message):
 def get_playlist_tracks(playlist_url, num_tracks=50, offset=0):
     logging.debug("Processing playlist at %s." % playlist_url)
     
-    r = client.get('/resolve', url=username_or_url)
+    r = client.get('/resolve', url=playlist_url)
     get_url = "playlists/" + str(r.id)
     logging.debug("Playlist ID: %s." % str(r.id))
     
@@ -64,7 +64,7 @@ def get_favorite_tracks(username, num_tracks=50, offset=0):
 # properly (ie. give it 50, and it sometimes returns 49 tracks), we
 # have to manualyl keep track of how many items were returned, in
 # order to know the next call's offset value
-def get_tracks(username_or_url, method, num_tracks):
+def get_tracks(parse_url, method, num_tracks):
     all_tracks = []
     num_tracks_retrieved = 0
     num_tracks_left = num_tracks
@@ -89,7 +89,7 @@ def get_tracks(username_or_url, method, num_tracks):
             })
 
         # get the tracks
-        tracks = get_tracks_method(username_or_url, limit, offset)
+        tracks = get_tracks_method(parse_url, limit, offset)
 
         if len(tracks) == 0:
             break
@@ -140,40 +140,8 @@ def edit_id3_tags(track, mp3_path, img_path):
         )
         audio.save()
 
-if __name__ == '__main__':
+def download_the_things(parse_url, num_tracks, dry_run, mp3s_dir, images_dir, dl_data_filename):
     try:
-        # logger config
-        logging.basicConfig(
-            filename='scdownloader.log',
-            format='%(asctime)s | %(levelname)s | %(module)s | %(message)s',
-            datefmt='%m/%d/%Y %I:%M:%S %p',
-            level=logging.DEBUG
-        )
-
-        # parse command line args
-        parser = argparse.ArgumentParser()
-        parser.add_argument("username_or_url", help="SoundCloud username, or URL to a SoundCloud playlist")
-        parser.add_argument("--num_songs", help="Number of tracks to process (default %s)" % default_num_tracks, type=int)
-        parser.add_argument("--dry_run", help="Display tracks but don't download", action="store_true")
-        parser.add_argument("--mp3_path", help="Path for mp3 downloads (default: %s)" % default_mp3s_dir)
-        parser.add_argument("--img_path", help="Path for image downloads (default: %s)" % default_images_dir)
-        parser.add_argument("--dl_data", help="Path for download data JSON file (default: %s)" % default_dl_data_filename)
-        args = parser.parse_args()
-
-        username_or_url = args.username_or_url
-        num_tracks = args.num_songs or default_num_tracks
-        dry_run = args.dry_run
-        images_dir = args.img_path or default_images_dir
-        mp3s_dir = args.mp3_path or default_mp3s_dir
-        dl_data_filename = args.dl_data or default_dl_data_filename
-
-        logging.debug("username/url: %s" % username_or_url)
-        logging.debug("num_tracks: %s" % num_tracks)
-        logging.debug("dry_run: %s" % dry_run)
-        logging.debug("mp3s_dir: %s" % mp3s_dir)
-        logging.debug("images_dir: %s" % images_dir)
-        logging.debug("dl_data: %s" % dl_data_filename)
-
         # create download and images directory
         if not dry_run:
             if not os.path.exists(mp3s_dir):
@@ -188,22 +156,18 @@ if __name__ == '__main__':
             logging.debug("Could not load %s, continuing..." % dl_data_filename)
             saved_data = {}
 
-        # create SoundCloud client
-        logging.debug("client_id: %s", default_client_id)
-        client = soundcloud.Client(client_id=default_client_id)
-
         tracks = []
 
         # check if arg is username or playlist url
         # pick appropriate function to use later
-        if username_or_url.find("/sets/") != -1:
+        if parse_url.find("/sets/") != -1:
             # process playlist/set
-            print_and_log_info("Retreiving tracks from %s." % username_or_url)
-            tracks = get_tracks(username_or_url, 'playlist', num_tracks)
+            print_and_log_info("Retreiving tracks from %s." % parse_url)
+            tracks = get_tracks(parse_url, 'playlist', num_tracks)
         else:
             # process user favs
-            print_and_log_info("Retrieving %s's favorite tracks." % username_or_url)
-            tracks = get_tracks(username_or_url, 'favs', num_tracks)
+            print_and_log_info("Retrieving %s's favorite tracks." % parse_url)
+            tracks = get_tracks(parse_url, 'favs', num_tracks)
 
         # iterate through and download tracks
         count = 0
@@ -275,3 +239,42 @@ if __name__ == '__main__':
         if not dry_run: save_json_data(saved_data, dl_data_filename)
         # done!
         print_and_log_info("Done.")
+
+if __name__ == '__main__':
+    # logger config
+    logging.basicConfig(
+        filename='scdownloader.log',
+        format='%(asctime)s | %(levelname)s | %(module)s | %(message)s',
+        datefmt='%m/%d/%Y %I:%M:%S %p',
+        level=logging.DEBUG
+    )
+
+    # parse command line args
+    parser = argparse.ArgumentParser()
+    parser.add_argument("parse_url", help="SoundCloud URL for user's likes, playlists list, or specific playlist")
+    parser.add_argument("--num_songs", help="Number of tracks to process (default %s)" % default_num_tracks, type=int)
+    parser.add_argument("--dry_run", help="Display tracks but don't download", action="store_true")
+    parser.add_argument("--mp3_path", help="Path for mp3 downloads (default: %s)" % default_mp3s_dir)
+    parser.add_argument("--img_path", help="Path for image downloads (default: %s)" % default_images_dir)
+    parser.add_argument("--dl_data", help="Path for download data JSON file (default: %s)" % default_dl_data_filename)
+    args = parser.parse_args()
+
+    parse_url = args.parse_url
+    num_tracks = args.num_songs or default_num_tracks
+    dry_run = args.dry_run
+    images_dir = args.img_path or default_images_dir
+    mp3s_dir = args.mp3_path or default_mp3s_dir
+    dl_data_filename = args.dl_data or default_dl_data_filename
+
+    logging.debug("parse_url: %s" % parse_url)
+    logging.debug("num_tracks: %s" % num_tracks)
+    logging.debug("dry_run: %s" % dry_run)
+    logging.debug("mp3s_dir: %s" % mp3s_dir)
+    logging.debug("images_dir: %s" % images_dir)
+    logging.debug("dl_data: %s" % dl_data_filename)
+
+    # create SoundCloud client
+    logging.debug("client_id: %s", default_client_id)
+    client = soundcloud.Client(client_id=default_client_id)
+
+    download_the_things(parse_url, num_tracks, dry_run, mp3s_dir, images_dir, dl_data_filename)
