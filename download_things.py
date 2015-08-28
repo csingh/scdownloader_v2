@@ -114,7 +114,7 @@ def edit_id3_tags(track, mp3_path, img_path):
     logging.debug("Adding artist/title ID3 tags...")
     meta = mutagen.File(mp3_path, easy=True)
     meta["title"] = track.title
-    meta["artist"] = track.username
+    meta["artist"] = track.artist
     meta.save()
 
     # Embed description into lyrics field
@@ -183,10 +183,10 @@ def download_the_things(tracks, num_tracks, dry_run, mp3s_dir, dl_data_filename)
         info = {
             "count" : count,
             "total" : len(tracks),
-            "username" : t.username,
+            "artist" : t.artist,
             "title" : t.title
         }
-        print_and_log_info("Processing %(count)s of %(total)s: %(username)s - %(title)s" % info)
+        print_and_log_info("Processing %(count)s of %(total)s: %(artist)s - %(title)s" % info)
 
         logging.debug(str(t))
 

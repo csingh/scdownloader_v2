@@ -10,7 +10,7 @@ class Track:
         # r = client.get('/resolve', url=<playlist_url>)
         #       -> type(r.tracks) = <type 'list'>
         #       -> type(r.tracks[0]) = <type 'dict'>
-        self.username = None;
+        self.artist = None;
         self.title = None;
         self.permalink = None;
         self.description = None;
@@ -26,10 +26,10 @@ class Track:
         else:
             raise TypeError("Unsupported type: %s." % str(type(object)))
 
-        self.filename = helpers.slugify(self.username) + "-" + helpers.slugify(self.title)
+        self.filename = helpers.slugify(self.artist) + "-" + helpers.slugify(self.title)
 
         # just to be safe... shouldn't hurt.
-        self.username = helpers.convert_to_ascii(self.username);
+        self.artist = helpers.convert_to_ascii(self.artist);
         self.title = helpers.convert_to_ascii(self.title);
         self.permalink = helpers.convert_to_ascii(self.permalink);
         self.description = helpers.convert_to_ascii(self.description);
@@ -38,7 +38,7 @@ class Track:
         self.artwork_url = helpers.convert_to_ascii(self.artwork_url);
 
     def init_from_sc_resource(self, sc_resource):
-        self.username = sc_resource.user["username"]
+        self.artist = sc_resource.user["username"]
         self.title = sc_resource.title
         self.permalink = sc_resource.permalink_url
         self.description = sc_resource.description
@@ -61,7 +61,7 @@ class Track:
         self.artwork_url = self.artwork_url.replace("-large", "-t500x500")
 
     def init_from_dict(self, dict_obj):
-        self.username = dict_obj["user"]["username"]
+        self.artist = dict_obj["user"]["username"]
         self.title = dict_obj["title"]
         self.permalink = dict_obj["permalink_url"]
         self.description = dict_obj["description"]
@@ -98,7 +98,7 @@ class Track:
 
     def to_dict(self):
         d = {}
-        d["username"] = self.username;
+        d["artist"] = self.artist;
         d["title"] = self.title;
         d["permalink"] = self.permalink;
         d["description"] = self.description;
@@ -110,7 +110,7 @@ class Track:
         return d
 
     def __str__(self):
-        s  = "username: " + str(self.username )+ "\n"
+        s  = "artist: " + str(self.artist )+ "\n"
         s += "title: " + str(self.title )+ "\n"
         s += "filename: " + str(self.filename )+ "\n"
         s += "permalink: " + str(self.permalink )+ "\n"
