@@ -6,6 +6,7 @@ import logging
 import traceback
 
 import argparse
+import re
 import os
 import sys
 from datetime import datetime
@@ -223,7 +224,8 @@ def parse_url_and_get_tracks(parse_url, num_tracks):
     parse_url = parse_url.strip()
 
     # list of playlists
-    if parse_url[-5:] == 'sets/':
+    if re.match('.+\/sets(\/)?$', parse_url):
+        logging.debug("list of playlists match for %s" % parse_url)
         print_and_log_info("Processing all sets from %s." % parse_url)
 
         playlists = client.get('/resolve', url=parse_url)
@@ -241,7 +243,9 @@ def parse_url_and_get_tracks(parse_url, num_tracks):
             download_the_things(tracks, num_tracks, dry_run, new_mp3s_dir, new_dl_data_filename)
 
     # single playlist
-    elif parse_url.find('/sets') != -1:
+    elif re.match('.+\/sets\/.+', parse_url):
+        logging.debug("single playlist match for %s" % parse_url)
+
         r = client.get('/resolve', url=parse_url)
 
         username = r.user["permalink"]
@@ -254,7 +258,9 @@ def parse_url_and_get_tracks(parse_url, num_tracks):
         tracks = get_tracks(parse_url, 'playlist', num_tracks)
         download_the_things(tracks, num_tracks, dry_run, new_mp3s_dir, new_dl_data_filename)
     # user likes
-    else:
+    elif re.match('.*soundcloud.com\/[a-zA-Z0-9_]+(\/)?$', parse_url):
+        logging.debug("user likes match for %s" % parse_url)
+
         r = client.get('/resolve', url=parse_url)
 
         username = r.permalink
@@ -266,6 +272,9 @@ def parse_url_and_get_tracks(parse_url, num_tracks):
         print_and_log_info("Processing likes from %s." % r.permalink)
         tracks = get_tracks(parse_url, 'favs', num_tracks)
         download_the_things(tracks, num_tracks, dry_run, new_mp3s_dir, new_dl_data_filename)
+    else:
+        print_and_log_error("Invalid URL: %s." % parse_url)
+        print_and_log_info("Please check that the above is a supported URL type. See example usages here: https://github.com/csingh/scdownloader_v2")
 
 #-------------------------------------------------------------------------------
 
