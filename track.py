@@ -38,8 +38,16 @@ class Track:
         self.artwork_url = helpers.convert_to_ascii(self.artwork_url);
 
     def init_from_sc_resource(self, sc_resource):
-        self.artist = sc_resource.user["username"]
-        self.title = sc_resource.title
+        # if title in the form of "artist - song_title", then split and use
+        # this artist for artist attribute instead of track uploader's username
+        index = sc_resource.title.find(" - ")
+        if index != -1:
+            self.artist = sc_resource.title[:index]
+            self.title = sc_resource.title[index+3:]
+        else:
+            self.title = sc_resource.title
+            self.artist = sc_resource.user["username"]
+
         self.permalink = sc_resource.permalink_url
         self.description = sc_resource.description
 
@@ -61,8 +69,16 @@ class Track:
         self.artwork_url = self.artwork_url.replace("-large", "-t500x500")
 
     def init_from_dict(self, dict_obj):
-        self.artist = dict_obj["user"]["username"]
-        self.title = dict_obj["title"]
+        # if title in the form of "artist - song_title", then split and use
+        # this artist for artist attribute instead of track uploader's username
+        index = dict_obj["title"].find(" - ")
+        if index != -1:
+            self.artist = dict_obj["title"][:index]
+            self.title = dict_obj["title"][index+3:]
+        else:
+            self.title = dict_obj["title"]
+            self.artist = dict_obj["user"]["username"]
+
         self.permalink = dict_obj["permalink_url"]
         self.description = dict_obj["description"]
 
