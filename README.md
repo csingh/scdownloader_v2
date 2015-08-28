@@ -17,9 +17,11 @@ A Python script to download your SoundCloud favourites or playlists (with artist
 
 #Finally
 * run 'python3 download_things.py -h' to see usage details
-* Example usage (user likes): 'python3 download_things.py http://soundcloud.com/csingh91/' to download csingh91's liked tracks
-* Example usage (playlist/set): 'python3 download_things.py http://soundcloud.com/csingh91/sets/mixes' to download tracks from csingh91's "mixes" playlist
-* Example usage (all playlists/sets): 'python3 download_things.py http://soundcloud.com/csingh91/sets/' to download all of csingh91's playlists
+
+#Example Usage
+* get user likes: 'python3 download_things.py http://soundcloud.com/csingh91/' to download csingh91's liked tracks
+* get a playlist/set: 'python3 download_things.py http://soundcloud.com/csingh91/sets/mixes' to download tracks from csingh91's "mixes" playlist
+* get all playlists/sets from a user: 'python3 download_things.py http://soundcloud.com/csingh91/sets/' to download all of csingh91's playlists
 
 #Notes
 * script will keep track of downloaded files, and skip them on next run (data saved to "dl_data.json" by default)
