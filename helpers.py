@@ -11,7 +11,7 @@ def create_dir_if_doesnt_exist(directory):
         os.makedirs(directory)
 
 def convert_to_ascii(value):
-    if value is None: return None
+    if value is None: return ""
     return unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
 
 # from the Django lib
