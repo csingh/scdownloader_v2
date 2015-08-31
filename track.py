@@ -45,7 +45,7 @@ class Track:
         sc_info  = "Downloaded from SoundCloud"
         sc_info += "\nUploader: " + self.uploader
         sc_info += "\nTitle: " + self.original_title
-        self.description = sc_info + "\n" + self.description
+        self.description = sc_info + "\n\n\n" + self.description
 
     def init_from_sc_resource(self, sc_resource):
         self.uploader = sc_resource.user["username"]
