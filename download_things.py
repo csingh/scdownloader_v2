@@ -115,6 +115,7 @@ def edit_id3_tags(track, mp3_path, img_path):
     meta = mutagen.File(mp3_path, easy=True)
     meta["title"] = track.title
     meta["artist"] = track.artist
+    meta["album"] = "SoundCloud"
     meta.save()
 
     # Embed description into lyrics field
