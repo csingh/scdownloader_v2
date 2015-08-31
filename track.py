@@ -28,8 +28,6 @@ class Track:
         else:
             raise TypeError("Unsupported type: %s." % str(type(object)))
 
-        self.filename = helpers.slugify(self.artist) + "-" + helpers.slugify(self.title)
-
         # just to be safe... shouldn't hurt.
         self.uploader = helpers.convert_to_ascii(self.uploader)
         self.artist = helpers.convert_to_ascii(self.artist);
@@ -39,6 +37,9 @@ class Track:
 
         # extract artist/title
         self.__get_artist_and_title__()
+
+        # create track filename
+        self.filename = helpers.slugify(self.artist) + "-" + helpers.slugify(self.title)
 
         # add soundcloud info to description
         sc_info  = "Downloaded from SoundCloud"
