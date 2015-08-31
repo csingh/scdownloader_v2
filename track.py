@@ -10,8 +10,10 @@ class Track:
         # r = client.get('/resolve', url=<playlist_url>)
         #       -> type(r.tracks) = <type 'list'>
         #       -> type(r.tracks[0]) = <type 'dict'>
+        self.uploader = None;
         self.artist = None;
         self.title = None;
+        self.original_title = None;
         self.permalink = None;
         self.description = None;
         self.stream_url = None;
@@ -29,16 +31,22 @@ class Track:
         self.filename = helpers.slugify(self.artist) + "-" + helpers.slugify(self.title)
 
         # just to be safe... shouldn't hurt.
+        self.uploader = helpers.convert_to_ascii(self.uploader)
         self.artist = helpers.convert_to_ascii(self.artist);
+        self.original_title = helpers.convert_to_ascii(self.original_title)
         self.title = helpers.convert_to_ascii(self.title);
-        self.permalink = helpers.convert_to_ascii(self.permalink);
         self.description = helpers.convert_to_ascii(self.description);
-        self.stream_url = helpers.convert_to_ascii(self.stream_url);
-        self.download_url = helpers.convert_to_ascii(self.download_url);
-        self.artwork_url = helpers.convert_to_ascii(self.artwork_url);
+
+        # add soundcloud info to description
+        sc_info  = "Downloaded from SoundCloud"
+        sc_info += "\nUploader: " + self.uploader
+        sc_info += "\nTitle: " + self.original_title
+        self.description = sc_info + "\n" + self.description
 
     def init_from_sc_resource(self, sc_resource):
+        self.uploader = sc_resource.user["username"]
         self.artist = sc_resource.user["username"]
+        self.original_title = sc_resource.title
         self.title = sc_resource.title
         self.permalink = sc_resource.permalink_url
         self.description = sc_resource.description
@@ -61,7 +69,9 @@ class Track:
         self.artwork_url = self.artwork_url.replace("-large", "-t500x500")
 
     def init_from_dict(self, dict_obj):
+        self.uploader = dict_obj["user"]["username"]
         self.artist = dict_obj["user"]["username"]
+        self.original_title = dict_obj["title"]
         self.title = dict_obj["title"]
         self.permalink = dict_obj["permalink_url"]
         self.description = dict_obj["description"]
