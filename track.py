@@ -37,6 +37,9 @@ class Track:
         self.title = helpers.convert_to_ascii(self.title);
         self.description = helpers.convert_to_ascii(self.description);
 
+        # extract artist/title
+        self.__get_artist_and_title__()
+
         # add soundcloud info to description
         sc_info  = "Downloaded from SoundCloud"
         sc_info += "\nUploader: " + self.uploader
@@ -92,6 +95,14 @@ class Track:
 
         # get 500x500 link instead of thumbnail
         self.artwork_url = self.artwork_url.replace("-large", "-t500x500")
+
+    def __get_artist_and_title__(self):
+        # if title in the form of "artist - song_title", then split and use
+        # this artist for artist attribute instead of track uploader's username
+        index = self.title.find(" - ")
+        if index != -1:
+            self.artist = self.title[:index]
+            self.title = self.title[index+3:]
 
     def get_download_link(self, client_id):
         if self.stream_url is None and self.download_url is None:
