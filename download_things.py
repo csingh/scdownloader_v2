@@ -259,7 +259,7 @@ def parse_url_and_get_tracks(parse_url, num_tracks):
         tracks = get_tracks(parse_url, 'playlist', num_tracks)
         download_the_things(tracks, num_tracks, dry_run, new_mp3s_dir, new_dl_data_filename)
     # user likes
-    elif re.match('.+soundcloud.com\/[a-zA-Z0-9_]+(\/)?$', parse_url):
+    elif re.match('.+soundcloud.com\/[a-zA-Z0-9_-]+(\/)?$', parse_url):
         logging.debug("user likes match for %s" % parse_url)
 
         r = client.get('/resolve', url=parse_url)
