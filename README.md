@@ -19,10 +19,17 @@ A Python script to download your SoundCloud favourites or playlists (with artist
 * run `python3 download_things.py -h` to see usage details
 
 #Example Usage
-* get **csingh91**'s **likes**, but **don't download**: `python3 download_things.py http://soundcloud.com/csingh91/ --dry_run`
-* download **csingh91**'s **likes**: `python3 download_things.py http://soundcloud.com/csingh91/`
-* download **csingh91**'s **'mixes' playlist**: `python3 download_things.py http://soundcloud.com/csingh91/sets/mixes`
-* download **all playlists** from **csingh91**: `python3 download_things.py http://soundcloud.com/csingh91/sets/`
+get **csingh91**'s **likes**, but **don't download**:
+>`python3 download_things.py http://soundcloud.com/csingh91/ --dry_run`
+
+download **csingh91**'s **likes**:
+>`python3 download_things.py http://soundcloud.com/csingh91/`
+
+download **csingh91**'s **'mixes' playlist**:
+>`python3 download_things.py http://soundcloud.com/csingh91/sets/mixes`
+
+download **all playlists** from **csingh91**:
+>`python3 download_things.py http://soundcloud.com/csingh91/sets/`
 
 #Notes
 * script will only process 50 songs by default. Use --num_songs argument to override this
